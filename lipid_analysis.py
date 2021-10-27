@@ -1,5 +1,6 @@
 #import scipy
 import numpy as np
+import sys
 
 def getFrameCount(file):
     arc = open(file, 'r')
@@ -102,11 +103,11 @@ def bilayerDistance(file, head_atom_name, lipids_per_leaflet, first_frame, last_
     return distances
 
 
-file = "C:\\Users\\jtgou\\OneDrive\\Documents\\UT_Austin\\ren_lab\\lipidAnalysis\\test\\dmpg.arc"
-
+file = sys.argv[1]
+lipids_per_leaflet = int(sys.argv[2])
 num_frames = getFrameCount(file)
 print("Num Frames = " + str(num_frames))
-distances = bilayerDistance(file, "P1", 9, 1, num_frames)
+distances = bilayerDistance(file, "P1", lipids_per_leaflet, 1, num_frames)
 
 avg_dist = 0
 i = 0
@@ -116,6 +117,7 @@ for row in distances:
 avg_dist = avg_dist / i
 
 print("Average distance = " + str(avg_dist))
+print("Std. Dev. = " + str(np.std(distances[:,2])))
             
                 
                 
