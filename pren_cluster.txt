@@ -44,3 +44,6 @@ nohup /home/liuchw/OpenMM-Feb-2021/tinker/source/dynamic_omm.x dmpg.xyz 5000000 
 nohup /home/liuchw/OpenMM-Feb-2021/tinker/source/dynamic_omm.x dmpg.xyz 5000000 0.1 0.1 1 300 > log.txt &
 
 nohup /home/liuchw/Softwares/tinkers/Tinker9-latest/build_cuda11.2/tinker9 dynamic step8_dynamic.xyz 1000000 2 0.1 4 303.5 1 > step8_dynamic.log &
+
+
+nohup /home/liuchw/Softwares/tinkers/Tinker9-latest/build_cuda11.2/tinker9 dynamic step5_output.xyz 50000000 2 5 4 303.5 1 > step5_dynamic.log &
