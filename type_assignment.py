@@ -34,6 +34,8 @@ def return_type(atom, lipid_size, lipid_type_dict):
         return 8
     elif atom.name == "CLA":
         return 15
+    elif atom.name == "SOD":
+        return 7
     elif atom.name == "OT":
         return 36
     elif atom.name == "HT":
@@ -44,17 +46,17 @@ def return_type(atom, lipid_size, lipid_type_dict):
             numInLipid = str(lipid_size)
         else:
             numInLipid = str(numInLipid)
-        print(numInLipid)
+        #print(numInLipid)
         return lipid_type_dict[numInLipid]
 
 
-file1 = open(r'C:\Users\jtgou\OneDrive\Documents\UT_Austin\ren_lab\charmm_gui\dmpg.xyz', 'r')
+file1 = open(r'C:\Users\jtgou\OneDrive\Documents\UT_Austin\ren_lab\lipidAnalysis\lipid_references\dmpg.xyz', 'r')
 
 lipid_size = 111
 
-file2 = open(r'C:\Users\jtgou\OneDrive\Documents\UT_Austin\ren_lab\charmm_gui\dmpg_72_lipids\tinker\step5_input.xyz', 'r')
+file2 = open(r'C:\Users\jtgou\OneDrive\Documents\UT_Austin\ren_lab\lipidAnalysis\bilayers\dmpg_production\step5_input.xyz', 'r')
 
-file3 = open(r'C:\Users\jtgou\OneDrive\Documents\UT_Austin\ren_lab\charmm_gui\dmpg_72_lipids\tinker\step5_output.xyz', 'w+')
+file3 = open(r'C:\Users\jtgou\OneDrive\Documents\UT_Austin\ren_lab\lipidAnalysis\bilayers\dmpg_production\step5_output.xyz', 'w+')
 
 
 # Parse model file
@@ -63,11 +65,14 @@ lines = file1.readlines()
 lineNum = 1
 lipid_type_dict = dict()
 for line in lines:
+    #print(line)
     tokens = line.split()
-    if lineNum <= 2 and len(tokens) >= 6:
+    if lineNum > 2 and len(tokens) >= 6:
+        #print(line)
         newAtom = return_atom(tokens)
         if int(newAtom.num) <= lipid_size:
             lipid_type_dict[newAtom.num] = newAtom.atom_type
+    lineNum += 1
 
 # Parse input XYZ
 print("Translating input XYZ")
