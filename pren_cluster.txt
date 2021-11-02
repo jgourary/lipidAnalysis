@@ -1,0 +1,46 @@
+source /home/jtg2769/.ap.bashrc
+cd /home/jtg2769/lipids/poltype/single_fragments/LMFA00000002_single_10/
+conda activate poltype
+nohup python /home/jtg2769/lipids/poltype/master/PoltypeModules/poltype.py &
+---
+nohup /home/liuchw/Softwares/tinkers/Tinker9-latest/build_cuda11.2/tinker9 dynamic step8_output.xyz 5000000 1 0.1 4 303.5 1 > step8_dynamic.log &
+
+nohup /home/liuchw/Softwares/tinkers/Tinker9-latest/build_cuda11.2/tinker9 dynamic dmpg.xyz 100 2 2 4 303.5 1 > step7_dynamic.log &
+---
+conda activate loos
+python /home/jtg2769/loos/loos/Packages/PyLOOS/sysinfo.py step7_output.xyz
+
+
+ python /home/jtg2769/loos/loos/Packages/PyLOOS/axis_with_membrane.py step7_output.xyz step7_output.arc 'name =~ "P1"'
+ 
+---
+
+Hi Josh, sorry for the glacially slow reply on this. Your message came in the day after surgery when I was pretty out of it and just completely forgot to circle back later. Please let me know if there is anything you still need from me. Anyway, I wanted to thank you again for the opportunity to intern. Getting to explore the intersection of molecular dynamics and machine learning was very exciting, and I picked up lots of things to take back to my own work.
+---
+
+
+density-dist : requires charge or mass (ideally both) in system file
+potential_profile.py : post processes output from density-dist
+---
+
+500,000 steps, 0.1 step size, 50 K, dielectric 5 - check!
+500,000 steps, 0.1 step size, 100 K, dielectric 5 - check!
+500,000 steps, 0.1 step size, 150 K, dielectric 5 - check!
+500,000 steps, 0.1 step size, 250 K, dielectric 5 - check!
+500,000 steps, 0.1 step size, 310 K, dielectric 5 - check!
+
+500,000 steps, 0.15 step size, 310 K, dielectric 5 - explosion (step reverted)
+
+500,000 steps, 0.1 step size, 310 K, dielectric 5 - check!
+500,000 steps, 0.1 step size, 310 K, dielectric 4 - check!
+500,000 steps, 0.1 step size, 310 K, dielectric 3 - check!
+500,000 steps, 0.1 step size, 310 K, dielectric 2 - check!
+500,000 steps, 0.1 step size, 310 K, dielectric 1 - check!
+
+nohup /home/liuchw/OpenMM-Feb-2021/tinker/source/dynamic_omm.x dmpg.xyz 5000000 0.1 0.1 1 300 > log.txt &
+
+/home/liuchw/Softwares/tinkers/Tinker-latest/bin/analyze
+
+nohup /home/liuchw/OpenMM-Feb-2021/tinker/source/dynamic_omm.x dmpg.xyz 5000000 0.1 0.1 1 300 > log.txt &
+
+nohup /home/liuchw/Softwares/tinkers/Tinker9-latest/build_cuda11.2/tinker9 dynamic step8_dynamic.xyz 1000000 2 0.1 4 303.5 1 > step8_dynamic.log &
