@@ -57,7 +57,6 @@ def getFrameDistance(bottom_leaflet, top_leaflet, lipids_per_leaflet):
 
 
 
-
 def bilayerDistance(file, head_atom_name, lipids_per_leaflet, first_frame, last_frame):
     arc = open(file, 'r')
     
