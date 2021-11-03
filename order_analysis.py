@@ -3,7 +3,7 @@ import numpy as np
 import sys
 
 
-
+verbose = False
 
 def unit_vector(vector):
     """ Returns the unit vector of the vector.  """
@@ -97,50 +97,60 @@ def getBackBoneAtoms(file):
                     
             # if still valid
             if num_C == 2 and num_H == 2:
-                valid_id.append(atom)
+                new_type = atoms[atom].atom_type
+                if not new_type in valid_id:
+                    valid_id.append(new_type)
+            elif num_C == 1 and num_H == 3:
+                new_type = atoms[atom].atom_type
+                if not new_type in valid_id:
+                    valid_id.append(new_type)
     print(valid_id)            
     return valid_id
             
             
-def getSingleFrameParam(atoms):
+def getSingleFrameParam(atoms, atom_type):
     angleSum = 0
     orderSum = 0
     numAngles = 0
     normal = np.array([0,0,1])
     
-    # iterate over all atoms
-    for atom in atoms:
-        
-        # reset params
-        hAtomNum = 0
-        
-        # check if atom is valid
-        if atom in valid_id:
-            
+    for atom_id in atoms: 
+        if atoms[atom_id].atom_type == atom_type:
+            # reset params
+            hAtomNum = 0
+               
             # look through bonds in more detail
-            for bonded_atom in atoms[atom].bound_atoms:
-                if "H" in atoms[bonded_atom].name:
+            for bonded_atom in atoms[atom_id].bound_atoms:
+                if "H" == atoms[bonded_atom].name[0]:
                     hAtomNum = atoms[bonded_atom].num
-                    
-            v1 = np.array([atoms[atom].coords[0] - atoms[hAtomNum].coords[0], atoms[atom].coords[1] - atoms[hAtomNum].coords[1], atoms[atom].coords[2] - atoms[hAtomNum].coords[2]])
-            angle = angle_between(normal, v1)
-            order = 3 * (np.cos(angle))**2 - 1
-            #print(angle)
-            #print(order)
             
-            angleSum += angle
-            orderSum += order
-            numAngles += 1
+            if hAtomNum != 0:
+                v1 = np.array([atoms[atom_id].coords[0] - atoms[hAtomNum].coords[0], atoms[atom_id].coords[1] - atoms[hAtomNum].coords[1], atoms[atom_id].coords[2] - atoms[hAtomNum].coords[2]])
+                angle = angle_between(normal, v1)
+                order = 3 * (np.cos(angle))**2 - 1
+                if np.abs(angle) > 100:
+                    print(angle)
+                if np.abs(order) > 100:
+                    print(order)
                 
-    
-    angleSum = angleSum / numAngles
-    orderSum = 0.5 * orderSum / numAngles
-    #print(angleSum)
-    return angleSum, orderSum
+                angleSum += angle
+                orderSum += order
+                numAngles += 1
+            else:
+                print("Missing H atom for type " + atom_type + " and index " + atom_id)
+                
+    if numAngles > 0:
+        angleSum = angleSum / numAngles
+        orderSum = 0.5 * orderSum / numAngles
+        #print(angleSum)
+        return angleSum, orderSum
+    else:
+        print("Failed to find a valid angle")
+        return -1, -1
                 
 
 
-def orderParams(file, first_frame, last_frame):
+def orderParams(file, first_frame, last_frame, atom_type):
     arc = open(file, 'r')
     
     # Get first line to identify splits between frames
@@ -166,10 +176,11 @@ def orderParams(file, first_frame, last_frame):
             
             # Process last frame
             if frame_num > 0 and frame_num >= first_frame and frame_num <= last_frame:
-                avg_angle, avg_order = getSingleFrameParam(atoms)
+                avg_angle, avg_order = getSingleFrameParam(atoms, atom_type)
                 angles[frame_num,0] = avg_angle
                 angles[frame_num,1] = avg_order
-                print("Frame Number: " + str(frame_num) + ", Angle: " + str(avg_angle) + ", Order: " + str(avg_order))
+                if verbose:
+                    print("Frame Number: " + str(frame_num) + ", Angle: " + str(avg_angle) + ", Order: " + str(avg_order))
                 
             
             # iterate frame number counter
@@ -186,25 +197,26 @@ def orderParams(file, first_frame, last_frame):
     return angles
             
 
+
 file = sys.argv[1]
 ref = sys.argv[2]
 
-valid_id = getBackBoneAtoms(ref)
+valid_types = getBackBoneAtoms(ref)
 
 num_frames = getFrameCount(file)
 print("Num Frames = " + str(num_frames))
 
-angles = orderParams(file, 1, num_frames)
-
-final_angle = 0
-final_order = 0
-i = 0
-for row in angles:
-    final_angle += row[0]
-    final_order += row[1]
-    i += 1
-final_angle = final_angle / i
-final_order = final_order / i
-
-print("Average Angle = " + str(final_angle))
-print("Average Order = " + str(final_order))
+for valid_type in valid_types:
+    angles = orderParams(file, 1, num_frames, valid_type)
+    final_angle = 0
+    final_order = 0
+    i = 0
+    for row in angles:
+        final_angle += row[0]
+        final_order += row[1]
+        i += 1
+    final_angle = final_angle / i
+    final_order = final_order / i
+    print(valid_type)
+    print("Average Angle = " + str(final_angle))
+    print("Average Order = " + str(final_order))
