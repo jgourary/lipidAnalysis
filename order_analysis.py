@@ -65,6 +65,7 @@ def return_atom(tokens):
         
 def getSingleFrameParam(atoms):
     angleSum = 0
+    orderSum = 0
     numAngles = 0
     normal = np.array([0,0,1])
     
@@ -96,11 +97,18 @@ def getSingleFrameParam(atoms):
                 #print("also has 2C and 2H bound")
                 v1 = np.array([atoms[atom].coords[0] - atoms[hAtomNum].coords[0], atoms[atom].coords[1] - atoms[hAtomNum].coords[1], atoms[atom].coords[2] - atoms[hAtomNum].coords[2]])
                 angle = angle_between(normal, v1)
-                #print("Angle = " + str(angle))
+                order = 3 * (np.cos(angle))**2 - 1
+                #print(angle)
+                #print(order)
+                
                 angleSum += angle
+                orderSum += order
                 numAngles += 1
     
-    return angleSum / numAngles
+    angleSum = angleSum / numAngles
+    orderSum = 0.5 * orderSum / numAngles
+    #print(angleSum)
+    return angleSum, orderSum
                 
 
 
@@ -114,7 +122,7 @@ def orderParams(file, first_frame, last_frame):
     frame_num = 0
         
     frames_to_process = last_frame - first_frame + 1
-    angles = np.empty((frames_to_process, 1), dtype=float)
+    angles = np.empty((frames_to_process, 2), dtype=float)
    
     
     atoms = {}
@@ -130,9 +138,10 @@ def orderParams(file, first_frame, last_frame):
             
             # Process last frame
             if frame_num > 0 and frame_num >= first_frame and frame_num <= last_frame:
-                avg_order = getSingleFrameParam(atoms)
-                angles[frame_num] = avg_order
-                print("Frame Number: " + str(frame_num) + ", Order: " + str(avg_order))
+                avg_angle, avg_order = getSingleFrameParam(atoms)
+                angles[frame_num,0] = avg_angle
+                angles[frame_num,1] = avg_order
+                print("Frame Number: " + str(frame_num) + ", Angle: " + str(avg_angle) + ", Order: " + str(avg_order))
                 
             
             # iterate frame number counter
@@ -152,4 +161,17 @@ file = sys.argv[1]
 
 num_frames = getFrameCount(file)
 print("Num Frames = " + str(num_frames))
-avg_order = orderParams(file, 1, num_frames)
+angles = orderParams(file, 1, num_frames)
+
+final_angle = 0
+final_order = 0
+i = 0
+for row in angles:
+    final_angle += row[0]
+    final_order += row[1]
+    i += 1
+final_angle = final_angle / i
+final_order = final_order / i
+
+print("Average Angle = " + str(final_angle))
+print("Average Order = " + str(final_order))
