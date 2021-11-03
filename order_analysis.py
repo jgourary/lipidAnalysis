@@ -3,6 +3,8 @@ import numpy as np
 import sys
 
 
+
+
 def unit_vector(vector):
     """ Returns the unit vector of the vector.  """
     return vector / np.linalg.norm(vector)
@@ -62,7 +64,44 @@ def return_atom(tokens):
     newAtom = Atom(this_num, this_name, this_coords, this_atom_type, this_bound_atoms)
     return newAtom
         
+ 
+def getBackBoneAtoms(file):
+    xyz = open(file, 'r')
+    atoms = {}
+    valid_id = []
+    
+    lineNum = 1
+    for line in xyz:
+        cleaned_line = line.rstrip()    
+        tokens = cleaned_line.split()
         
+        if len(tokens) > 5 and lineNum > 2:            
+            newAtom = return_atom(tokens)
+            atoms[newAtom.num] = newAtom
+            
+            
+        lineNum += 1
+        
+    for atom in atoms:
+        if "C" in atoms[atom].name and len(atoms[atom].bound_atoms) == 4:
+            num_C = 0
+            num_H = 0
+            for bonded_atom in atoms[atom].bound_atoms:
+                #print(atoms[bonded_atom].name)
+                if "C" == atoms[bonded_atom].name[0]:
+                    #print("found C")
+                    num_C += 1
+                elif "H" == atoms[bonded_atom].name[0]:
+                    #print("found H")
+                    num_H += 1
+                    
+            # if still valid
+            if num_C == 2 and num_H == 2:
+                valid_id.append(atom)
+    print(valid_id)            
+    return valid_id
+            
+            
 def getSingleFrameParam(atoms):
     angleSum = 0
     orderSum = 0
@@ -74,36 +113,25 @@ def getSingleFrameParam(atoms):
         
         # reset params
         hAtomNum = 0
-        num_C = 0
-        num_H = 0
         
         # check if atom is valid
-        if "C" in atoms[atom].name and len(atoms[atom].bound_atoms) == 4:
-            #print("Found carbon with 4 bonds")
-            # print(atoms[atom].bound_atoms)
+        if atom in valid_id:
+            
             # look through bonds in more detail
             for bonded_atom in atoms[atom].bound_atoms:
-                #print(atoms[bonded_atom].name)
-                if "C" in atoms[bonded_atom].name:
-                    #print("found C")
-                    num_C += 1
-                elif "H" in atoms[bonded_atom].name:
-                    #print("found H")
-                    num_H += 1
+                if "H" in atoms[bonded_atom].name:
                     hAtomNum = atoms[bonded_atom].num
                     
-            # if still valid
-            if num_C == 2 and num_H == 2:
-                #print("also has 2C and 2H bound")
-                v1 = np.array([atoms[atom].coords[0] - atoms[hAtomNum].coords[0], atoms[atom].coords[1] - atoms[hAtomNum].coords[1], atoms[atom].coords[2] - atoms[hAtomNum].coords[2]])
-                angle = angle_between(normal, v1)
-                order = 3 * (np.cos(angle))**2 - 1
-                #print(angle)
-                #print(order)
+            v1 = np.array([atoms[atom].coords[0] - atoms[hAtomNum].coords[0], atoms[atom].coords[1] - atoms[hAtomNum].coords[1], atoms[atom].coords[2] - atoms[hAtomNum].coords[2]])
+            angle = angle_between(normal, v1)
+            order = 3 * (np.cos(angle))**2 - 1
+            #print(angle)
+            #print(order)
+            
+            angleSum += angle
+            orderSum += order
+            numAngles += 1
                 
-                angleSum += angle
-                orderSum += order
-                numAngles += 1
     
     angleSum = angleSum / numAngles
     orderSum = 0.5 * orderSum / numAngles
@@ -155,12 +183,17 @@ def orderParams(file, first_frame, last_frame):
             
             newAtom = return_atom(tokens)
             atoms[newAtom.num] = newAtom
+    return angles
             
 
 file = sys.argv[1]
+ref = sys.argv[2]
+
+valid_id = getBackBoneAtoms(ref)
 
 num_frames = getFrameCount(file)
 print("Num Frames = " + str(num_frames))
+
 angles = orderParams(file, 1, num_frames)
 
 final_angle = 0
