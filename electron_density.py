@@ -4,7 +4,7 @@ import sys
 
 
 # Parameters
-verbose = True
+verbose = False
 num_bins = 100 # bin width = box height / num_bins
 
 
@@ -25,7 +25,9 @@ def getAtomicNumbers():
             # resplit into tokens
             tokens = cleaned_line.split()
             if tokens[0] == "atom" and len(tokens) > 5:
-                masses[tokens[1]] = float(tokens[5])
+                masses[tokens[1]] = float(tokens[4])
+                if verbose:
+                    print(tokens[1] + ", " + str(masses[tokens[1]]))
     print("Found atomic numbers for " + str(len(masses)) + " atom types")
     return masses
 
@@ -142,13 +144,14 @@ def single_frame_electron_density(frame_num, atoms):
     i = 0
     for elec_count in electrons:
         densities[i] = elec_count / bin_volume
-        print(densities[i])
+        if verbose:
+            print(densities[i])
         i += 1
     newFrame = frameData(frame_num, electrons, densities)
     return newFrame
 
 
-def electron_density(first_frame, last_frame):
+def electron_density(first_frame, last_frame, frame_interval):
     arc = open(file, 'r')
     out_file = open(out, 'w')
     # Get first line to identify splits between frames
@@ -171,9 +174,8 @@ def electron_density(first_frame, last_frame):
             # Process last frame
             if verbose:
                 print("Found frame no. " + str(frame_num))
-            if 1 <= frame_num <= last_frame and frame_num >= first_frame:
-                if verbose:
-                    print("Finding densities for frame " + str(frame_num))
+            if 1 <= frame_num <= last_frame and frame_num >= first_frame and frame_num % frame_interval == 0:
+                print("Finding densities for frame " + str(frame_num))
                 this_frame_data = single_frame_electron_density(frame_num, atoms)
                 all_frame_data.append(this_frame_data)
 
@@ -196,12 +198,13 @@ def electron_density(first_frame, last_frame):
     for frame in all_frame_data:
         i = 0
         for density in frame.densities:
-            print(density)
+            if verbose:
+                print(density)
             average_densities[i] += density
             i += 1
     i = 0
     for density in average_densities:
-        average_densities[i] = density / num_frames
+        average_densities[i] = density / len(all_frame_data)
         i += 1
 
     i = 0
@@ -213,12 +216,12 @@ def electron_density(first_frame, last_frame):
             
 
 file = sys.argv[1]
-ref = sys.argv[2]
-prm = sys.argv[3]
-out = sys.argv[4]
+prm = sys.argv[2]
+out = sys.argv[3]
+frame_interval = 10
 
 bin_cutoffs, bin_volume = get_bin_ranges()
 atomic_numbers = getAtomicNumbers()
 num_frames = getFrameCount()
-bins = electron_density(1, num_frames)
+bins = electron_density(1, num_frames, frame_interval)
 
