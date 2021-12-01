@@ -50,13 +50,13 @@ def return_type(atom, lipid_size, lipid_type_dict):
         return lipid_type_dict[numInLipid]
 
 
-file1 = open(r'C:\Users\jtgou\OneDrive\Documents\UT_Austin\ren_lab\lipidAnalysis\lipid_references\dmpg.xyz', 'r')
+file1 = open(r'C:\Users\jtgou\lipids\lipidAnalysis\lipid_references\dmpg.xyz', 'r')
 
 lipid_size = 111
 
-file2 = open(r'C:\Users\jtgou\OneDrive\Documents\UT_Austin\ren_lab\lipidAnalysis\bilayers\dmpg_production\step5_input.xyz', 'r')
+file2 = open(r'C:\Users\jtgou\lipids\lipidAnalysis\bilayers\dmpg_production_128\step5_input.xyz', 'r')
 
-file3 = open(r'C:\Users\jtgou\OneDrive\Documents\UT_Austin\ren_lab\lipidAnalysis\bilayers\dmpg_production\step5_output.xyz', 'w+')
+file3 = open(r'C:\Users\jtgou\lipids\lipidAnalysis\bilayers\dmpg_production_128\step5_output.xyz', 'w+')
 
 
 # Parse model file
